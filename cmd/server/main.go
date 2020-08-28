@@ -1,12 +1,14 @@
 package main
 
 import (
-	"bufio"
+	"bytes"
+	"context"
 	"hitsperf"
 	"log"
-	"os"
 
 	"github.com/QuangTung97/hits"
+	_ "github.com/go-sql-driver/mysql"
+	"github.com/jmoiron/sqlx"
 	"google.golang.org/protobuf/proto"
 )
 
@@ -54,36 +56,45 @@ func eventMarshaller(eventType hits.EventType, e interface{}) []byte {
 	if err != nil {
 		panic(err)
 	}
-	log.Println(bytes)
 
 	return bytes
 }
 
 type DBTest struct {
-	file *bufio.Writer
-	f    *os.File
+	db *sqlx.DB
 }
 
 func NewDBTest() *DBTest {
-	f, err := os.OpenFile("events", os.O_APPEND|os.O_WRONLY, 0666)
-	if err != nil {
-		panic(err)
-	}
-	file := bufio.NewWriter(f)
+	db := sqlx.MustConnect("mysql", "root:1@tcp(localhost:3306)/bench")
 	return &DBTest{
-		file: file,
-		f:    f,
+		db: db,
 	}
 }
 
 func (db *DBTest) Store(events []hits.MarshalledEvent) {
-	for _, e := range events {
-		_, err := db.file.Write(e.Data)
+	log.Println("LENGTH", len(events))
+
+	query := `INSERT INTO events(seq, type, timestamp, data) VALUES (?, ?, ?, ?)`
+	buff := bytes.NewBufferString(query)
+	count := len(events)
+	for i := 1; i < count; i++ {
+		_, err := buff.WriteString(",(?, ?, ?, ?)")
 		if err != nil {
 			panic(err)
 		}
 	}
-	err := db.file.Flush()
+	query = buff.String()
+
+	args := make([]interface{}, 0, 4*len(events))
+	for _, e := range events {
+		args = append(args, e.Sequence)
+		args = append(args, e.Type)
+		args = append(args, e.Timestamp)
+		args = append(args, e.Data)
+	}
+
+	ctx := context.Background()
+	_, err := db.db.ExecContext(ctx, query, args...)
 	if err != nil {
 		panic(err)
 	}
@@ -102,7 +113,7 @@ func main() {
 	db := NewDBTest()
 
 	config := hits.Config{
-		RingBufferShift: 10,
+		RingBufferShift: 16,
 		Processor:       p,
 		EventMarshaller: eventMarshaller,
 		Journaler:       db,

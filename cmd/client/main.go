@@ -20,11 +20,16 @@ func main() {
 	begin := time.Now()
 
 	var wg sync.WaitGroup
-	wg.Add(10000)
-	for i := 0; i < 10000; i++ {
+	wg.Add(1000)
+
+	var mut sync.Mutex
+	var d time.Duration = 0
+
+	for i := 0; i < 1000; i++ {
 		go func() {
 			defer wg.Done()
 
+			begin := time.Now()
 			req := &hitsperf.IncRequest{
 				Value: 5,
 			}
@@ -32,9 +37,14 @@ func main() {
 			if err != nil {
 				panic(err)
 			}
+			end := time.Now()
+			mut.Lock()
+			d += end.Sub(begin)
+			mut.Unlock()
 		}()
 	}
 	wg.Wait()
 
 	fmt.Println(time.Now().Sub(begin).Nanoseconds())
+	fmt.Println("AVG request time: ", d.Nanoseconds()/1000.0)
 }

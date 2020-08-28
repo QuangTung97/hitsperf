@@ -1,0 +1,20 @@
+syntax = "proto3";
+
+package hitsperf;
+
+option go_package = ".;hitsperf";
+
+service IncreaseService {
+  rpc Inc (IncRequest) returns (IncResponse);
+}
+
+message IncRequest {
+  uint64 value = 1;
+}
+
+message IncResponse {
+}
+
+message EventIncProto {
+  uint64 value = 1;
+}

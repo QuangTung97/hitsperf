@@ -2,7 +2,6 @@ package main
 
 import (
 	"bytes"
-	"context"
 	"hitsperf"
 	"log"
 
@@ -71,9 +70,7 @@ func NewDBTest() *DBTest {
 	}
 }
 
-func (db *DBTest) Store(events []hits.MarshalledEvent) {
-	log.Println("LENGTH", len(events))
-
+func storeEvents(db *sqlx.DB, events []hits.MarshalledEvent) {
 	query := `INSERT INTO events(seq, type, timestamp, data) VALUES (?, ?, ?, ?)`
 	buff := bytes.NewBufferString(query)
 	count := len(events)
@@ -93,11 +90,21 @@ func (db *DBTest) Store(events []hits.MarshalledEvent) {
 		args = append(args, e.Data)
 	}
 
-	ctx := context.Background()
-	_, err := db.db.ExecContext(ctx, query, args...)
+	_, err := db.Exec(query, args...)
 	if err != nil {
 		panic(err)
 	}
+}
+
+func (db *DBTest) Store(events []hits.MarshalledEvent) {
+	log.Println("LENGTH", len(events))
+
+	const batchSize = 500
+	numBatches := (len(events) - 1) / batchSize
+	for i := 0; i < numBatches; i++ {
+		storeEvents(db.db, events[i*batchSize:(i+1)*batchSize])
+	}
+	storeEvents(db.db, events[numBatches*batchSize:])
 }
 
 func (db *DBTest) ReadFrom(fromSequence uint64) ([]hits.MarshalledEvent, error) {

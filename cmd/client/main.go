@@ -20,12 +20,15 @@ func main() {
 	begin := time.Now()
 
 	var wg sync.WaitGroup
-	wg.Add(1000)
+
+	const numCommands = 30000
+
+	wg.Add(numCommands)
 
 	var mut sync.Mutex
 	var d time.Duration = 0
 
-	for i := 0; i < 1000; i++ {
+	for i := 0; i < numCommands; i++ {
 		go func() {
 			defer wg.Done()
 
@@ -46,5 +49,5 @@ func main() {
 	wg.Wait()
 
 	fmt.Println(time.Now().Sub(begin).Nanoseconds())
-	fmt.Println("AVG request time: ", d.Nanoseconds()/1000.0)
+	fmt.Println("AVG request time: ", float64(d.Nanoseconds())/float64(numCommands))
 }

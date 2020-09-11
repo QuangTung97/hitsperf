@@ -42,7 +42,7 @@ func RunServer(cmdChan chan<- hits.Command) {
 		cmdChan: cmdChan,
 	}
 
-	listener, err := net.Listen("tcp", ":6000")
+	listener, err := net.Listen("tcp", ":4000")
 	if err != nil {
 		panic(err)
 	}

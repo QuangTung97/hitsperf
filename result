@@ -1,2 +1,51 @@
-30000 events, 500 batch size:
-    1,872,642,771 ns
+hits:
+    300 events, 500 batch size:
+        41.943153ms
+        avg:
+            32.8590019ms
+    3000 events, 500 batch size:
+        272.822529ms
+        avg:
+            188.457320ms
+    30000 events, 500 batch size:
+        1,872,642,771 ns
+        1.898554105s
+        avg:
+            1.2929517035s
+
+    3000 events, 1000 batch size:
+        186.572462ms
+        avg:
+            114.8199265ms
+
+
+transactional:
+    300 events, max conns 10:
+        519.948964ms
+        avg:
+            346.136ms
+
+    3000 events, max conns 10:
+        5.286908615s
+        avg:
+            2.560647s
+
+    3000 events, max conns 20:
+        3.20134142s
+        avg:
+            1.5427522s
+
+    3000 events, max conns 40:
+        2.214911797s
+        avg:
+            1.05610726s
+
+    3000 events, max conns 80:
+        888.337502ms
+        avg:
+            451.4223796ms
+
+    3000 events, max conns 100:
+        717.145082ms
+        avg:
+            362.5655816ms

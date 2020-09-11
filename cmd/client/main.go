@@ -11,7 +11,7 @@ import (
 )
 
 func main() {
-	conn, err := grpc.Dial("localhost:6000", grpc.WithInsecure())
+	conn, err := grpc.Dial("localhost:4000", grpc.WithInsecure())
 	if err != nil {
 		panic(err)
 	}
@@ -48,6 +48,6 @@ func main() {
 	}
 	wg.Wait()
 
-	fmt.Println(time.Now().Sub(begin).Nanoseconds())
+	fmt.Println(time.Now().Sub(begin))
 	fmt.Println("AVG request time: ", float64(d.Nanoseconds())/float64(numCommands))
 }

@@ -65,6 +65,10 @@ type DBTest struct {
 
 func NewDBTest() *DBTest {
 	db := sqlx.MustConnect("mysql", "root:1@tcp(localhost:3306)/bench")
+	_, err := db.Exec("TRUNCATE events")
+	if err != nil {
+		panic(err)
+	}
 	return &DBTest{
 		db: db,
 	}
@@ -99,7 +103,7 @@ func storeEvents(db *sqlx.DB, events []hits.MarshalledEvent) {
 func (db *DBTest) Store(events []hits.MarshalledEvent) {
 	log.Println("LENGTH", len(events))
 
-	const batchSize = 500
+	const batchSize = 1000
 	numBatches := (len(events) - 1) / batchSize
 	for i := 0; i < numBatches; i++ {
 		storeEvents(db.db, events[i*batchSize:(i+1)*batchSize])
@@ -112,7 +116,6 @@ func (db *DBTest) ReadFrom(fromSequence uint64) ([]hits.MarshalledEvent, error) 
 }
 
 func (db *DBTest) Write(events []hits.Event) {
-
 }
 
 func main() {

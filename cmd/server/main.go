@@ -128,6 +128,7 @@ func main() {
 		EventMarshaller: eventMarshaller,
 		Journaler:       db,
 		DBWriter:        db,
+		ObserverAddress: ":5000",
 	}
 	ctx := hits.NewContext(config)
 
